@@ -1,6 +1,6 @@
 {
   "name": "js-data-type-check",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "check data type in js",
   "main": "./dist/js-data-type-check-umd.min.js",
   "scripts": {
