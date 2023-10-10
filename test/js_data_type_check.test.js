@@ -4,7 +4,18 @@
 'use strict'
 /*被测函数*/
 // const {base,extend}=require('../dist/dataTypeCheck-min')
-const {base,extend,mysql}=require('../src/js_data_type_check')
+const env=require("./env").env
+let base,extend,mysql
+if("pack"===env){
+    base=require('../dist/js-data-type-check-umd.min').base
+    extend=require('../dist/js-data-type-check-umd.min').extend
+    mysql=require('../dist/js-data-type-check-umd.min').mysql
+}else{
+    base=require('../src/js_data_type_check').base
+    extend=require('../src/js_data_type_check').extend
+    mysql=require('../src/js_data_type_check').mysql
+}
+
 const assert=require('assert')
 const os=require('os')
 const moment=require("moment")
