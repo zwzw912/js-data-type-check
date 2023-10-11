@@ -30,7 +30,8 @@ export default {
     ],
     plugins: [ 
         commonjs({
-            ignore: ['conditional-runtime-dependency'],
+            //ignore: ['conditional-runtime-dependency'],
+	    //ignoreDynamicRequires:['test/env.js']
         }) 
     ]
 }
