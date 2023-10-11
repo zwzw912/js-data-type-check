@@ -1,10 +1,9 @@
-const error_code=require('./src/data/error_code').BASE_ERROR_CODE
-const error=require('./src/data/error').ERROR
-const wrap_upload=require('./src/wrap_mysql2')
-const generator=require('./src/util/generator')
+
+
+const {base,extend,mysql}=require('./src/js_data_type_check')
+
 module.exports={
-    error_code,
-    error,
-    wrap_upload,
-    generator,
+    base,
+    mysql,
+    extend,
 }

@@ -3,7 +3,7 @@
 import commonjs from "@rollup/plugin-commonjs";
 import terser from "@rollup/plugin-terser";
 export default {
-    input: "./src/js_data_type_check.js",
+    input: "./index.js",
     
     output: [
         {   //可以处理es/cjs
@@ -31,7 +31,7 @@ export default {
     plugins: [ 
         commonjs({
             //ignore: ['conditional-runtime-dependency'],
-	    //ignoreDynamicRequires:['test/env.js']
+	        //ignoreDynamicRequires:['test/env.js']
         }) 
     ]
 }

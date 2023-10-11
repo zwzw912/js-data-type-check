@@ -1,10 +1,10 @@
 {
   "name": "js-data-type-check",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "check data type in js",
-  "main": "./dist/js-data-type-check-umd.min.js",
+  "main": "./index.js",
   "scripts": {
-    "test": "mocha test/**/*.test.js",
+    "test": "rollup -c && mocha test/**/*.test.js",
     "pack": "rollup -c"
   },
   "repository": {
