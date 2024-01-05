@@ -4,12 +4,9 @@
  */
 'use strict'
 const moment=require("moment")
+const _=require("lodash")
 //基本类型检测
 const base= {
-    isArray(obj) {
-        return Array.isArray(obj)  //ES6引入的新方法
-    },
-
     isObject(obj){
         //return obj && typeof obj === 'object' && Object == obj.constructor;
         //如果添加obj的话，和bool值&&后，变成obj，而不是bool了
@@ -19,9 +16,7 @@ const base= {
         //null也是object，所以需要排除
         return typeof obj === 'object' && obj!==null && Object == obj.constructor;
     },
-    isString(value){
-        return typeof value === 'string'
-    },
+
     //检查是否有效日期; 返回boolean
     //只接受字符形式的日期
     isDate(date) {
@@ -31,10 +26,7 @@ const base= {
         // console.log(date)
         return moment(date,['YYYY-MM-DD HH:mm:ss',moment.ISO_8601],true).isValid()
     },
-    //不考虑字符串且只考虑有限数字
-    isInt(value) {
-        return Number.isInteger(value)
-    },
+
     //数字只考虑有限数字
     isNumber(value) {
         return typeof value === 'number' && false===Number.isNaN(value) && true===Number.isFinite(value)
@@ -43,21 +35,14 @@ const base= {
     //只考虑有限数字
     isFloat(value){
         //this.Int已经排除了NaN
-        return typeof value === 'number' && false === this.isInt(value) && true===Number.isFinite(value)
+        return typeof value === 'number' && false === _.isInteger(value) && true===Number.isFinite(value)
     },
 
-    isBoolean(value){
-        return (typeof value === 'boolean')
-    },
-
-    isRegExp(value){
-        return Object.prototype.toString.call(value).includes('RegExp')
-    },
     /** 从客户端输入的日期，必须是字符形式，以便用正则进行过滤。因为moment当前会接受整数（包括字符形式的整数），转换成合法的日期。
      * */
     isStringDate(value,reg=/^(?:19|20)\d{2}-(?:0\d|1[1-2])-(?:0\d|[1-2]\d|3[0-1])/){
         //首先判断是否为字符
-        if(false===this.isString(value)){
+        if(false===_.isString(value)){
             return false
         }
         //然后判断是否正确匹配（大致匹配）
@@ -69,7 +54,7 @@ const base= {
     },
     isStringDateTime(value,reg=/^(?:19|20)\d{2}-(?:0\d|1[1-2])-(?:0\d|[1-2]\d|3[0-1])(?:\s|T)(?:[0|1]\d|2[0-3]):[0-5]\d:[0-5]\d(\.\d{3})?(?:\s*|Z)?$/){
         //首先判断是否为字符
-        if(false===this.isString(value)){
+        if(false===_.isString(value)){
             return false
         }
         value=value.trim()
@@ -95,14 +80,14 @@ const extend={
             return true
         }
 
-        if(base.isString(value)){
+        if(_.isString(value)){
             //"" === value  和 0 === value.length 的效果等价，取其中之一即可
             return (0 === value.length || "" === value.trim());
         }
         if(base.isObject(value)){
             return 0 === Object.keys(value).length
         }
-        if(base.isArray(value)){
+        if(_.isArray(value)){
             return  0 === value.length
         }
         //其他类型（例如数值 NaN/Infinity），默认不空
@@ -126,7 +111,7 @@ const mysql={
     *   return; boolean
     *   */
     isTinyInt(value,unsign=true){
-        if(false===base.isInt(value)){
+        if(false===_.isInteger(value)){
             return false
         }
         if(true===unsign){
@@ -136,7 +121,7 @@ const mysql={
         }
     },
     isSmallInt(value,unsign=true){
-        if(false===base.isInt(value)){
+        if(false===_.isInteger(value)){
             return false
         }
         if(true===unsign){
@@ -146,7 +131,7 @@ const mysql={
         }
     },
     isMediumInt(value,unsign=true){
-        if(false===base.isInt(value)){
+        if(false===_.isInteger(value)){
             return false
         }
         if(true===unsign){
@@ -156,7 +141,7 @@ const mysql={
         }
     },
     isInt(value,unsign=true){
-        if(false===base.isInt(value)){
+        if(false===_.isInteger(value)){
             return false
         }
         if(true===unsign){
@@ -168,7 +153,7 @@ const mysql={
     //JS中，bigInt使用n表示。
     //为了避免混淆，mysql不使用bigint
 /*    isBigInt(value,unsign=true){
-        if(false===base.isInt(value)){
+        if(false===_.isInteger(value)){
             return false
         }
         if(true===unsign){

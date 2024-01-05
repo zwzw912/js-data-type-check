@@ -15,7 +15,7 @@ if("pack"===env){
     extend=require('../src/js_data_type_check').extend
     mysql=require('../src/js_data_type_check').mysql
 }
-
+const _=require('lodash')
 const assert=require('assert')
 const os=require('os')
 const moment=require("moment")
@@ -70,7 +70,7 @@ describe('all test', function() {
         it('base.isArray',function(){
             expectResult[7]=true
             let realResult=[]
-            testData.map(x=>realResult.push(base.isArray(x)))
+            testData.map(x=>realResult.push(_.isArray(x)))
             assert.deepStrictEqual(realResult.join(' '),expectResult.join(' '))
         })
 
@@ -99,7 +99,7 @@ describe('all test', function() {
             expectResult[27]=true   //字符形式的日期
             expectResult[28]=true   //字符形式的日期
             let realResult=[]
-            testData.map(x=>realResult.push(base.isString(x)))
+            testData.map(x=>realResult.push(_.isString(x)))
             assert.deepStrictEqual(realResult.join(' '),expectResult.join(' '))
         })
 
@@ -127,13 +127,14 @@ describe('all test', function() {
             testData.map(x=>realResult.push(base.isDateTime(x)))
             assert.deepStrictEqual(realResult.join(' '),expectResult.join(' '))
         })
-        it('base.isInt',function(){
+        it('base.isInteger',function(){
             expectResult[0]=true
             expectResult[1]=true
             expectResult[3]=true
             // expectResult[4]=true
             let realResult=[]
-            testData.map(x=>realResult.push(base.isInt(x)))
+            // testData.map(x=>realResult.push(base.isInt(x)))
+            testData.map(x=>realResult.push(_.isInteger(x)))
             assert.deepStrictEqual(realResult.join(' '),expectResult.join(' '))
         })
 
@@ -159,14 +160,14 @@ describe('all test', function() {
         it('base.isBoolean',function(){
             expectResult[5]=true
             let realResult=[]
-            testData.map(x=>realResult.push(base.isBoolean(x)))
+            testData.map(x=>realResult.push(_.isBoolean(x)))
             assert.deepStrictEqual(realResult.join(' '),expectResult.join(' '))
         })
 
         it('base.isRegExp',function(){
             expectResult[24]=true
             let realResult=[]
-            testData.map(x=>realResult.push(base.isRegExp(x)))
+            testData.map(x=>realResult.push(_.isRegExp(x)))
             assert.deepStrictEqual(realResult.join(' '),expectResult.join(' '))
         })
 
