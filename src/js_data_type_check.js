@@ -5,6 +5,7 @@
 'use strict'
 const moment=require("moment")
 const _=require("lodash")
+const {JS_DATA_TYPE,SIGN_UNSIGN}=require('./data/enm')
 //基本类型检测
 const base= {
     isObject(obj){
@@ -20,11 +21,27 @@ const base= {
     //检查是否有效日期; 返回boolean
     //只接受字符形式的日期
     isDate(date) {
-        return moment(date,['YYYY-MM-DD',moment.ISO_8601],true).isValid()
+        let parseDate=moment(date,['YYYY-MM-DD',moment.ISO_8601],true)
+        
+
+        if(parseDate.isValid() ){
+            let datePartString=parseDate.format('YYYY-MM-DD')
+            
+            return datePartString===date
+        }else{
+            return false
+        }
+        
     },
-    isDateTime(date){
-        // console.log(date)
-        return moment(date,['YYYY-MM-DD HH:mm:ss',moment.ISO_8601],true).isValid()
+    isDateTime(date){        
+        let parseDate=moment(date,['YYYY-MM-DD',moment.ISO_8601],true)        
+        if(parseDate.isValid() ){
+            let datePartString=parseDate.format('YYYY-MM-DD')
+            
+            return datePartString!==date
+        }else{
+            return false
+        }
     },
 
     //数字只考虑有限数字
@@ -113,7 +130,7 @@ const mysql={
     isTinyInt(value,unsign=true){
         if(false===_.isInteger(value)){
             return false
-        }
+        }    
         if(true===unsign){
             return value>=0 && value<=255
         }else{
@@ -164,8 +181,75 @@ const mysql={
     },*/
 }
 
+/* 
+*   @value: 要检测的数据
+*   @toSubType: 是否返回子类型，例如：number可以细分为int/float等
+*   return: JS_DATA_TYPE
+*   */
+function get_data_type(value){
+    let dataType=Object.prototype.toString.call(value).slice(8,-1).toLowerCase()
+    // console.log('dataType:',dataType)
+    let sign
+    switch(dataType){
+        case 'number':
+            sign=Math.sign(value)===1?SIGN_UNSIGN.UNSIGNED:SIGN_UNSIGN.SIGNED
+            console.log('value:',value,'dataType:',dataType,"sign:",sign)
+            if(base.isFloat(value)){
+                return [JS_DATA_TYPE.FLOAT,sign]
+            }
+            //  顺序很重要，例如1可以是tiny、small、medium、int，但很明显，期望是tiny，所以要从小到大排除
+            if(mysql.isTinyInt(value,sign===SIGN_UNSIGN.UNSIGNED)){
+                return [JS_DATA_TYPE.TINYINT,sign]
+            }
+            if(mysql.isSmallInt(value,sign===SIGN_UNSIGN.UNSIGNED)){
+                return [JS_DATA_TYPE.SMALLINT,sign]
+            }
+            if(mysql.isMediumInt(value,sign===SIGN_UNSIGN.UNSIGNED)){
+                return [JS_DATA_TYPE.MEDIUMINT,sign]
+            }                
+            if(mysql.isInt(value,sign===SIGN_UNSIGN.UNSIGNED)){
+                return [JS_DATA_TYPE.INT,sign]
+            } 
+            // NaN
+            if(Number.isNaN(value)){
+                return [JS_DATA_TYPE.NAN,sign]
+            }  
+            //infinity            
+            if(false===Number.isFinite(value)){
+                return [JS_DATA_TYPE.INFINITY,sign]
+            }            
+            return [JS_DATA_TYPE.UNKNOWN,sign] //my-input-rule中，没有对应的类型
+        case 'boolean':
+            return [JS_DATA_TYPE.BOOLEAN]
+        case'string':
+            if(base.isDate(value)){
+                return [JS_DATA_TYPE.STRING,JS_DATA_TYPE.DATE]
+            }
+            if(base.isDateTime(value)){
+                return [JS_DATA_TYPE.STRING,JS_DATA_TYPE.DATE_TIME]
+            }
+
+            return [JS_DATA_TYPE.STRING]
+        case 'object':
+            return [JS_DATA_TYPE.OBJECT]
+        case 'array':
+            return [JS_DATA_TYPE.ARRAY]
+        case 'function':
+            return [JS_DATA_TYPE.FUNCTION]
+        case 'date':
+            return [JS_DATA_TYPE.DATE]
+        case 'undefined':
+            return JS_DATA_TYPE.UNDEFINED
+        case 'null':
+            return JS_DATA_TYPE.NULL
+        default:
+            return JS_DATA_TYPE.UNKNOWN 
+    }
+    
+}
 module.exports={
     base,
     extend,
-    mysql
+    mysql,
+    get_data_type,
 }

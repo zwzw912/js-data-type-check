@@ -5,15 +5,22 @@
 /*被测函数*/
 // const {base,extend}=require('../dist/dataTypeCheck-min')
 const env=require("./env").env
-let base,extend,mysql
+let base,extend,mysql,get_data_type,JS_DATA_TYPE,SIGN_UNSIGN
 if("pack"===env){
     base=require('../dist/js-data-type-check-umd.min').base
     extend=require('../dist/js-data-type-check-umd.min').extend
     mysql=require('../dist/js-data-type-check-umd.min').mysql
+    get_data_type=require('../dist/js-data-type-check-umd.min').get_data_type
+    JS_DATA_TYPE=require('../dist/js-data-type-check-umd.min').JS_DATA_TYPE
+    SIGN_UNSIGN=require('../dist/js-data-type-check-umd.min').SIGN_UNSIGN
+
 }else{
     base=require('../src/js_data_type_check').base
     extend=require('../src/js_data_type_check').extend
     mysql=require('../src/js_data_type_check').mysql
+    get_data_type=require('../src/js_data_type_check').get_data_type
+    JS_DATA_TYPE=require('../src/data/enm').JS_DATA_TYPE
+    SIGN_UNSIGN=require('../src/data/enm').SIGN_UNSIGN
 }
 const _=require('lodash')
 const assert=require('assert')
@@ -54,13 +61,13 @@ describe('all test', function() {
     testData[23]='C:/Windows/win.ini'
     testData[24]=/a/i
 
-    testData[25]=new Date().toLocaleString()                  //带中文的字符   false
-    testData[26]=new Date().toISOString()                  //true
-    testData[27]=moment().toISOString()             //true
-    testData[28]=moment().add(1,'days').toISOString()                   //true
-
+    testData[25]=new Date().toLocaleString()                  //带中文的字符   date_time
+    testData[26]=new Date().toISOString()                  //字符   date_time
+    testData[27]=moment().toISOString()             //字符   date_time
+    testData[28]=moment().add(1,'days').toISOString()                   //字符   date_time
+    testData[29]='2012-10-10 00:00:00'                   //true
     let expectResult=new Array(testData.length)
-
+    console.log(testData)
     describe('base', function() {
         //Rest all expected data to false
         beforeEach(function(){
@@ -98,6 +105,7 @@ describe('all test', function() {
             expectResult[26]=true   //字符形式的日期
             expectResult[27]=true   //字符形式的日期
             expectResult[28]=true   //字符形式的日期
+            expectResult[29]=true   //字符形式的日期时间
             let realResult=[]
             testData.map(x=>realResult.push(_.isString(x)))
             assert.deepStrictEqual(realResult.join(' '),expectResult.join(' '))
@@ -108,21 +116,23 @@ describe('all test', function() {
             expectResult[20]=false
 
             expectResult[25]=false  //带中文
-            expectResult[26]=true
-            expectResult[27]=true
-            expectResult[28]=true
+            expectResult[26]=false
+            expectResult[27]=false
+            expectResult[28]=false
+            expectResult[29]=false
             let realResult=[]
             testData.map(x=>realResult.push(base.isDate(x)))
             assert.deepStrictEqual(realResult.join(' '),expectResult.join(' '))
         })
         it('base.isDateTime',function(){
-            expectResult[19]=true
+            expectResult[19]=false
             expectResult[20]=false
 
             expectResult[25]=false  //带中文
             expectResult[26]=true
             expectResult[27]=true
             expectResult[28]=true
+            expectResult[29]=true
             let realResult=[]
             testData.map(x=>realResult.push(base.isDateTime(x)))
             assert.deepStrictEqual(realResult.join(' '),expectResult.join(' '))
@@ -405,5 +415,82 @@ describe('all test', function() {
             assert.deepStrictEqual(func(data[3],unsign),true)
             // assert.deepStrictEqual(func(data[4],unsign),true)
         })*/
+    })
+    describe('get_data_type', function() {
+        it('negative float',function(){
+            assert.deepStrictEqual(get_data_type(-12.7),[JS_DATA_TYPE.FLOAT,SIGN_UNSIGN.SIGNED])
+        })
+        it('positive float',function(){
+            assert.deepStrictEqual(get_data_type(12.7),[JS_DATA_TYPE.FLOAT,SIGN_UNSIGN.UNSIGNED])
+        })
+        it('negative tinyint',function(){
+            assert.deepStrictEqual(get_data_type(-127),[JS_DATA_TYPE.TINYINT,SIGN_UNSIGN.SIGNED])
+        })
+        it('positive tinyint',function(){
+            assert.deepStrictEqual(get_data_type(128),[JS_DATA_TYPE.TINYINT,SIGN_UNSIGN.UNSIGNED])
+        })
+        it('negative smallint',function(){
+            assert.deepStrictEqual(get_data_type(-129),[JS_DATA_TYPE.SMALLINT,SIGN_UNSIGN.SIGNED])
+        })
+        it('positive smallint',function(){
+            assert.deepStrictEqual(get_data_type(65535),[JS_DATA_TYPE.SMALLINT,SIGN_UNSIGN.UNSIGNED])
+        })
+        it('negative mediumint',function(){
+            assert.deepStrictEqual(get_data_type(-32769),[JS_DATA_TYPE.MEDIUMINT,SIGN_UNSIGN.SIGNED])
+        })
+        it('positive mediumint',function(){
+            assert.deepStrictEqual(get_data_type(16777215),[JS_DATA_TYPE.MEDIUMINT,SIGN_UNSIGN.UNSIGNED])
+        })
+        it('negative int',function(){
+            assert.deepStrictEqual(get_data_type(-8388609),[JS_DATA_TYPE.INT,SIGN_UNSIGN.SIGNED])
+        })
+        it('positive int',function(){
+            assert.deepStrictEqual(get_data_type(4294967295),[JS_DATA_TYPE.INT,SIGN_UNSIGN.UNSIGNED])
+        })
+        it('NaN',function(){
+            assert.deepStrictEqual(get_data_type(NaN),[JS_DATA_TYPE.NAN,SIGN_UNSIGN.SIGNED])
+        })
+        it('POS infinite',function(){
+            assert.deepStrictEqual(get_data_type(Infinity),[JS_DATA_TYPE.INFINITY,SIGN_UNSIGN.UNSIGNED])
+        })
+        it('NEG infinite',function(){
+            assert.deepStrictEqual(get_data_type(-Infinity),[JS_DATA_TYPE.INFINITY,SIGN_UNSIGN.SIGNED])
+        })
+
+        it('string date',function(){
+            assert.deepStrictEqual(get_data_type('2012-10-10'),[JS_DATA_TYPE.STRING,JS_DATA_TYPE.DATE])
+        })
+        it('string ivalid date',function(){
+            assert.deepStrictEqual(get_data_type('2012-13-10'),[JS_DATA_TYPE.STRING])
+        })
+
+        it('string date time',function(){
+            assert.deepStrictEqual(get_data_type('2012-10-10 10:10:10'),[JS_DATA_TYPE.STRING,JS_DATA_TYPE.DATE_TIME])
+        })
+        it('string date time with T Z',function(){
+            assert.deepStrictEqual(get_data_type('2012-10-10T10:10:10Z'),[JS_DATA_TYPE.STRING,JS_DATA_TYPE.DATE_TIME])
+        })
+        it('string invlid date time',function(){
+            assert.deepStrictEqual(get_data_type('2012-13-10 10:10:10T'),[JS_DATA_TYPE.STRING])
+        })
+        it('string date time with time 00:00:00',function(){
+            assert.deepStrictEqual(get_data_type('2012-12-10 00:00:00'),[JS_DATA_TYPE.STRING,JS_DATA_TYPE.DATE_TIME])
+        })
+
+        it('object',function(){
+            assert.deepStrictEqual(get_data_type({}),[JS_DATA_TYPE.OBJECT])
+        })
+
+        it('array',function(){
+            assert.deepStrictEqual(get_data_type([]),[JS_DATA_TYPE.ARRAY])
+        })
+
+        it('function',function(){
+            assert.deepStrictEqual(get_data_type(function(){}),[JS_DATA_TYPE.FUNCTION])
+        })
+
+        it('date',function(){
+            assert.deepStrictEqual(get_data_type(new Date()),[JS_DATA_TYPE.DATE])
+        })
     })
 })
